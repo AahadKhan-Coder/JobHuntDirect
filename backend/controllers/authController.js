@@ -81,12 +81,25 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ message: "Please verify your email before login" });
 
     const token = generateToken(user._id);
-    res.cookie("token", token, { httpOnly: true, sameSite: "lax" });
-    res.json({ _id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin });
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", 
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isAdmin: user.isAdmin,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 // --- Logout ---
 export const logoutUser = (req, res) => {
@@ -126,13 +139,32 @@ export const googleLogin = async (req, res) => {
     let user = await User.findOne({ email });
 
     if (!user) {
-      user = await User.create({ name, email, password: Math.random().toString(36) });
+      user = await User.create({
+        name,
+        email,
+        password: Math.random().toString(36),
+        isVerified: true, // Google users are trusted verified
+      });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
-    res.cookie("token", token, { httpOnly: true, sameSite: "lax" });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
 
-    res.json({ _id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin });
+    // ✅ FIX: secure cookie here as well
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isAdmin: user.isAdmin,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
