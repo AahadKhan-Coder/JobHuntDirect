@@ -3,7 +3,7 @@ import API from "../utils/api";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
-import * as jwt_decode from "jwt-decode";
+import {jwtDecode} from "jwt-decode";
 import { Mail, Lock, LogIn, ArrowRight, Briefcase, Sparkles, AlertCircle, BriefcaseBusinessIcon, BriefcaseBusiness } from "lucide-react";
 
 export default function Login() {
@@ -31,7 +31,7 @@ export default function Login() {
   const handleGoogleSuccess = async (credentialResponse) => {
     setError("");
     setLoading(true);
-    const decoded = jwt_decode(credentialResponse.credential);
+    const decoded = jwtDecode(credentialResponse.credential);
     const googleUser = {
       name: decoded.name,
       email: decoded.email,
