@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from "react";
 import API from "../utils/api";
 import JobCard from "../components/JobCard";
-import { Search, Filter, TrendingUp, X, Sparkles } from "lucide-react";
+import { Search, Filter, TrendingUp, X, Sparkles, Mail, MessageCircleMore } from "lucide-react";
+import { toast } from "react-toastify";
 
 export default function Home({ user }) {
   const [jobs, setJobs] = useState([]);
@@ -13,6 +14,12 @@ export default function Home({ user }) {
   const [sort, setSort] = useState("latest");
 
   const [filtersOpen, setFiltersOpen] = useState(true);
+
+  const [supportOpen, setSupportOpen] = useState(false);
+const [supportEmail, setSupportEmail] = useState(user?.email || "");
+const [supportMsg, setSupportMsg] = useState("");
+const [sending, setSending] = useState(false);
+
 
   const loader = useRef(null);
 
@@ -71,13 +78,34 @@ export default function Home({ user }) {
     setSort("latest");
   };
 
+  const handleSupportSubmit = async (e) => {
+  e.preventDefault();
+  if (!supportEmail || !supportMsg.trim()) return alert("Please fill all fields.");
+  setSending(true);
+  try {
+    await API.post("/support", {
+      email: supportEmail,
+      message: supportMsg,
+    });
+    toast.success("Thank you! Your message has been sent.");
+    setSupportMsg("");
+    if (!user) setSupportEmail("");
+    setSupportOpen(false);
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to send message. Please try again.");
+  } finally {
+    setSending(false);
+  }
+};
+
   return (
     <div className="min-h-screen bg-transparent">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
         {/* Hero Section */}
         <div className="text-center mb-12 animate-fadeIn">
           <div className="inline-flex items-center justify-center p-2 bg-blue-100 dark:bg-blue-900 rounded-full mb-4">
-            <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400 animate-bounce" />
           </div>
           <h1 className="text-4xl md:text-5xl font-extrabold mb-3 bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
             Discover Your Dream Job
@@ -272,6 +300,67 @@ export default function Home({ user }) {
           </div>
         )}
       </div>
+      {/* 🆘 Floating Support Button */}
+<button
+  onClick={() => setSupportOpen(true)}
+  className="fixed bottom-20 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg transition-transform hover:scale-110"
+>
+  <MessageCircleMore/>
+</button>
+
+{/* Support Modal */}
+{supportOpen && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-6 relative m-4 md:m-0">
+      <button
+        onClick={() => setSupportOpen(false)}
+        className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 dark:hover:text-white"
+      >
+        ✖
+      </button>
+      <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
+        Support / Suggestions
+      </h2>
+      <form onSubmit={handleSupportSubmit} className="space-y-4">
+        {!user && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Your Email
+            </label>
+            <input
+              type="email"
+              value={supportEmail}
+              onChange={(e) => setSupportEmail(e.target.value)}
+              placeholder="Enter your email..."
+              className="w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
+              required
+            />
+          </div>
+        )}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Message
+          </label>
+          <textarea
+            value={supportMsg}
+            onChange={(e) => setSupportMsg(e.target.value)}
+            placeholder="Describe your issue or suggestion..."
+            className="w-full h-32 px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={sending}
+          className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition disabled:opacity-70"
+        >
+          {sending ? "Sending..." : "Send Message"}
+        </button>
+      </form>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }

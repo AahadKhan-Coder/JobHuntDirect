@@ -9,6 +9,7 @@ export default function AdminDashboard() {
     company: "",
     location: "",
     type: "",
+    salary: "",
     description: "",
     applyLink: "",
   });
@@ -29,15 +30,23 @@ export default function AdminDashboard() {
   };
 
   const handleCreate = async () => {
-    const { title, company, location, type, description, applyLink } = form;
-    if (!title || !company || !location || !type || !description || !applyLink) {
+    const { title, company, location, type, description, applyLink, salary } = form;
+    if ([title, company, location, type, description, applyLink, salary].some(v => !v.trim())) {
       return toast.error("All fields are required");
     }
 
     try {
-      await API.post("/jobs", form); // Admin route
+      await API.post("/jobs", form);
       toast.success("Job created successfully!");
-      setForm({ title: "", company: "", location: "", type: "", description: "", applyLink: "" });
+      setForm({
+        title: "",
+        company: "",
+        location: "",
+        type: "",
+        salary: "",
+        description: "",
+        applyLink: "",
+      });
       fetchJobs();
     } catch (error) {
       toast.error("Failed to create job");
@@ -52,14 +61,15 @@ export default function AdminDashboard() {
       company: job.company,
       location: job.location,
       type: job.type,
+      salary: job.salary || "",
       description: job.description,
       applyLink: job.applyLink,
     });
   };
 
   const handleUpdate = async () => {
-    const { title, company, location, type, description, applyLink } = form;
-    if (!title || !company || !location || !type || !description || !applyLink) {
+    const { title, company, location, type, description, applyLink, salary } = form;
+    if ([title, company, location, type, description, applyLink, salary].some(v => !v.trim())) {
       return toast.error("All fields are required");
     }
 
@@ -67,7 +77,15 @@ export default function AdminDashboard() {
       await API.put(`/jobs/${editJobId}`, form);
       toast.success("Job updated successfully!");
       setEditJobId(null);
-      setForm({ title: "", company: "", location: "", type: "", description: "", applyLink: "" });
+      setForm({
+        title: "",
+        company: "",
+        location: "",
+        type: "",
+        salary: "",
+        description: "",
+        applyLink: "",
+      });
       fetchJobs();
     } catch (error) {
       toast.error("Failed to update job");
@@ -123,6 +141,12 @@ export default function AdminDashboard() {
           <option value="Internship">Internship</option>
           <option value="Contract">Contract</option>
         </select>
+        <input
+          placeholder="Salary (e.g. $60,000 / year)"
+          value={form.salary}
+          onChange={(e) => setForm({ ...form, salary: e.target.value })}
+          className="border p-2 mb-2 w-full rounded"
+        />
         <textarea
           placeholder="Job Description"
           value={form.description}
@@ -147,7 +171,18 @@ export default function AdminDashboard() {
                 Update
               </button>
               <button
-                onClick={() => setEditJobId(null) || setForm({ title: "", company: "", location: "", type: "", description: "", applyLink: "" })}
+                onClick={() =>
+                  setEditJobId(null) ||
+                  setForm({
+                    title: "",
+                    company: "",
+                    location: "",
+                    type: "",
+                    salary: "",
+                    description: "",
+                    applyLink: "",
+                  })
+                }
                 className="bg-gray-500 text-white px-3 py-2 rounded hover:bg-gray-600 transition"
               >
                 Cancel
@@ -175,7 +210,7 @@ export default function AdminDashboard() {
                 className="flex justify-between items-center border p-2 mb-2 rounded"
               >
                 <span>
-                  {job.title} - {job.company} ({job.type})
+                  {job.title} - {job.company} ({job.type}) 💰 {job.salary || "N/A"}
                 </span>
                 <div className="flex gap-2">
                   <button

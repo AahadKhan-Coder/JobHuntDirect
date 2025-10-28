@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { Sun, Moon, Laptop } from "lucide-react";
 
 const options = [
-  { value: "light", label: "Light", icon: <Sun size={18} /> },
-  { value: "dark", label: "Dark", icon: <Moon size={18} /> },
-  { value: "system", label: "System", icon: <Laptop size={18} /> },
+  { value: "light", label: "Light", icon: <Sun size={18} className="animate-spin" /> },
+  { value: "dark", label: "Dark", icon: <Moon size={18} className="animate-pulse" /> },
+  { value: "system", label: "System", icon: <Laptop size={18} className="animate-none" /> },
 ];
 
 export default function ThemeToggle() {
@@ -36,7 +36,7 @@ export default function ThemeToggle() {
       {/* Selected / Compact */}
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center justify-center p-2 rounded-md text-gray-800 dark:text-gray-200"
+        className="flex items-center justify-center p-2 rounded-md text-gray-800 dark:text-gray-200 "
       >
         {options.find((o) => o.value === theme).icon}
       </button>

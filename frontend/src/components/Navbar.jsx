@@ -10,7 +10,7 @@ export default function Navbar() {
   return (
     <>
       {/* --- Mobile Top Header --- */}
-      <div className="flex items-center justify-between p-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700 md:hidden sticky top-0 z-40 shadow-sm">
+      <div className="flex items-center justify-between p-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700 lg:hidden sticky top-0 z-40 shadow-sm">
         <Link to="/" className="flex items-center gap-2 group">
           <div className="p-2 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl group-hover:scale-110 transition-transform duration-200 shadow-lg">
             <BriefcaseBusiness className="w-5 h-5 text-white" />
@@ -23,13 +23,13 @@ export default function Navbar() {
       </div>
 
       {/* --- Desktop / Tablet Top Navbar --- */}
-      <nav className="hidden md:flex items-center justify-between px-6 py-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 shadow-sm">
+      <nav className="hidden lg:flex items-center justify-between px-6 py-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 shadow-sm">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group">
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl blur-md opacity-50 group-hover:opacity-75 transition-opacity"></div>
             <div className="relative p-2.5 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl group-hover:scale-110 transition-transform duration-200 shadow-lg">
-              <Briefcase className="w-6 h-6 text-white" />
+              <BriefcaseBusiness className="w-6 h-6 text-white" />
             </div>
           </div>
           <div>
@@ -118,7 +118,7 @@ export default function Navbar() {
       </nav>
 
       {/* --- Mobile Bottom Navbar --- */}
-      <nav className="fixed bottom-0 left-0 w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg border-t border-gray-200 dark:border-gray-700 shadow-2xl flex justify-around items-center py-2 px-1 md:hidden z-50">
+      <nav className="fixed bottom-0 left-0 w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg border-t border-gray-200 dark:border-gray-700 shadow-2xl flex justify-around items-center py-2 px-1 lg:hidden z-50">
         <Link 
           to="/" 
           className="flex flex-col items-center gap-1 text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-800 min-w-[60px]"
