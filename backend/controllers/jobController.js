@@ -1,4 +1,5 @@
 import Job from "../models/Job.js";
+import axios from "axios";
 
 export const createJob = async (req, res) => {
   const { title, company, location, type, description, applyLink, salary } = req.body;
@@ -18,6 +19,16 @@ export const createJob = async (req, res) => {
       salary,
       createdBy: req.user?._id,
     });
+
+    try {
+      await axios.get(
+        `https://www.google.com/ping?sitemap=https://jobhuntdirect.jobsearchjob.xyz/sitemap.xml`
+      );
+      console.log("✅ Google ping successful — sitemap updated");
+    } catch (pingError) {
+      console.warn("⚠️ Failed to ping Google:", pingError.message);
+    }
+    
     res.status(201).json(newJob);
   } catch (error) {
     console.error("Create Job Error:", error);
