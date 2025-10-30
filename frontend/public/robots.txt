@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://jobhuntdirect.onrender.com/sitemap.xml
