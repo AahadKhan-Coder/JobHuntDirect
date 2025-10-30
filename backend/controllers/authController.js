@@ -50,7 +50,6 @@ export const registerUser = async (req, res) => {
 // --- Verify Email ---
 export const verifyEmail = async (req, res) => {
   const { token } = req.query;
-  console.log("Received token:", token);
   try {
     const user = await User.findOne({
       verificationToken: token,
