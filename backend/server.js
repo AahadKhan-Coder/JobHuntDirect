@@ -8,8 +8,8 @@ import authRoutes from "./routes/authRoutes.js";
 import jobRoutes from "./routes/jobRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import supportRoutes from "./routes/support.js";
-import sitemapRoutes from "./routes/sitemap.js";
-import robotsRoute from "./routes/robots.js";
+import sitemapRoutes from "./routes/api/sitemap.js";
+import robotsRoute from "./routes/api/robots.js";
 
 dotenv.config();
 connectDB();
