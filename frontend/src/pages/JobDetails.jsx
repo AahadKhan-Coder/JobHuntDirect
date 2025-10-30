@@ -31,12 +31,12 @@ export default function JobDetails() {
         const res = await API.get(`/jobs/${id}`);
         setJob(res.data);
 
-        const savedRes = await API.get("/users/saved");
-        const savedIds = savedRes.data?.map((j) => j._id) || [];
-        setIsSaved(savedIds.includes(res.data._id));
+        // const savedRes = await API.get("/users/saved");
+        // const savedIds = savedRes.data?.map((j) => j._id) || [];
+        // setIsSaved(savedIds.includes(res.data._id));
       } catch (error) {
         toast.error("Failed to fetch job details");
-        console.error(error);
+        // console.error(error);
       } finally {
         setLoading(false);
       }
@@ -44,6 +44,23 @@ export default function JobDetails() {
 
     fetchJob();
   }, [id]);
+
+  // Fetch saved jobs status
+  useEffect(() => {
+    if (!job) return;
+
+    const fetchSavedJobs = async () => {
+      try {
+        const savedRes = await API.get("/users/saved");
+        const savedIds = savedRes.data?.map((j) => j._id) || [];
+        setIsSaved(savedIds.includes(job._id));
+      } catch (error) {
+        // console.warn("Failed to fetch saved jobs", error); // do not toast
+      }
+    };
+
+    fetchSavedJobs();
+  }, [job]);
 
   const handleSaveJob = async () => {
     try {
@@ -56,7 +73,7 @@ export default function JobDetails() {
       }
       setIsSaved(!isSaved);
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       toast.error("Failed to update saved jobs");
     }
   };
