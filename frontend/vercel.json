@@ -6,7 +6,7 @@
     },
     {
       "source": "/sitemap.xml",
-      "destination": "/api/sitemap"
+      "destination": "https://jobhuntdirect.onrender.com/sitemap.xml"
     },
     {
       "source": "/assets/(.*)",
