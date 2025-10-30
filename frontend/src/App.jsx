@@ -13,8 +13,10 @@ import AdminRoute from "./components/AdminRoute";
 import ManageJobs from "./pages/ManageJobs";
 import VerifyEmail from "./pages/VerifyEmail";
 import ForgotPassword from "./pages/ForgotPassword";
+import { usePageTracking } from "./hooks/usePageTracking";
 
 function App() {
+  usePageTracking();
   return (
     <HelmetProvider>
       <AuthProvider>
