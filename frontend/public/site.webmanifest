@@ -1,6 +1,6 @@
 {
   "name": "JobHuntDirect",
-  "short_name": "JHD",
+  "short_name": "JobHD",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
@@ -16,6 +16,6 @@
     }
   ],
   "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "background_color": "#000000",
   "display": "standalone"
 }
