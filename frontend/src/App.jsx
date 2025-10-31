@@ -6,9 +6,10 @@ import { ToastContainer } from "react-toastify";
 import PageTrackingWrapper from "./components/PageTrackingWrapper";
 import AdminRoute from "./components/AdminRoute";
 
+import Home from "./pages/Home";
+
 // Lazy-loaded components
 const Navbar = lazy(() => import("./components/Navbar"));
-const Home = lazy(() => import("./pages/Home"));
 const JobDetails = lazy(() => import("./pages/JobDetails"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));

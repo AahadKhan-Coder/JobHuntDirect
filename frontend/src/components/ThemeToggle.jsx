@@ -37,6 +37,7 @@ export default function ThemeToggle() {
       <button
         onClick={() => setOpen(!open)}
         className="flex items-center justify-center p-2 rounded-md text-gray-800 dark:text-gray-200 "
+        aria-label="Theme Button"
       >
         {options.find((o) => o.value === theme).icon}
       </button>
@@ -52,6 +53,7 @@ export default function ThemeToggle() {
                 setOpen(false);
               }}
               className="flex items-center gap-2 w-full px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+              aria-label="Dark/Light According"
             >
               {opt.icon}
               <span>{opt.label}</span>
