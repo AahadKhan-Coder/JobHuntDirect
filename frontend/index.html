@@ -3,7 +3,38 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>JobHuntDirect</title>
+    
+    <!-- Theme Color for Browser UI -->
+    <meta name="theme-color" content="#2563eb" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1e293b" media="(prefers-color-scheme: dark)" />
+
+    <!-- Default SEO Meta Tags -->
+    <title>JobHuntDirect - Find Your Dream Job | Best Job Search Platform</title>
+    <meta name="description" content="Discover thousands of job opportunities at JobHuntDirect. Search, filter, and apply to jobs from top companies. Find full-time, part-time, remote, and contract positions." />
+    <meta name="keywords" content="jobs, job search, careers, hiring, employment, job portal, remote jobs, full-time jobs, JobHuntDirect, job listings, career opportunities" />
+    <meta name="author" content="JobHuntDirect" />
+    <link rel="canonical" href="https://www.jobhuntdirect.com/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.jobhuntdirect.com/" />
+    <meta property="og:site_name" content="JobHuntDirect" />
+    <meta property="og:title" content="JobHuntDirect - Find Your Dream Job" />
+    <meta property="og:description" content="Discover thousands of job opportunities. Search, filter, and apply to jobs from top companies worldwide." />
+    <meta property="og:image" content="https://www.jobhuntdirect.com/preview.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="JobHuntDirect - Job Search Platform" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://www.jobhuntdirect.com/" />
+    <meta name="twitter:title" content="JobHuntDirect - Find Your Dream Job" />
+    <meta name="twitter:description" content="Discover thousands of job opportunities. Search, filter, and apply to jobs from top companies worldwide." />
+    <meta name="twitter:image" content="https://www.jobhuntdirect.com/preview.png" />
+    <meta name="twitter:image:alt" content="JobHuntDirect - Job Search Platform" />
+    <meta name="twitter:creator" content="@JobHuntDirect" />
 
     <!-- Favicons -->
     <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
@@ -11,24 +42,81 @@
     <link rel="shortcut icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-title" content="JobHD" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="manifest" href="/site.webmanifest" />
 
-    <!-- Google tag (gtag.js) -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-ER3LZMLLM5"
-    ></script>
+    <!-- Preconnect to External Domains (Performance) -->
+    <link rel="preconnect" href="https://www.googletagmanager.com" />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
+    <!-- Google Analytics / Tag Manager -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ER3LZMLLM5"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
+      function gtag() { dataLayer.push(arguments); }
       gtag("js", new Date());
+      gtag("config", "G-ER3LZMLLM5", {
+        page_path: window.location.pathname,
+        send_page_view: true
+      });
+    </script>
 
-      gtag("config", "G-ER3LZMLLM5");
+    <!-- JSON-LD Structured Data for Website/Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "JobHuntDirect",
+      "url": "https://www.jobhuntdirect.com",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://www.jobhuntdirect.com/search?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "JobHuntDirect",
+        "url": "https://www.jobhuntdirect.com",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://www.jobhuntdirect.com/logo.png",
+          "width": 600,
+          "height": 60
+        },
+        "sameAs": [
+          "https://twitter.com/JobHuntDirect",
+          "https://www.linkedin.com/company/jobhuntdirect",
+          "https://www.facebook.com/JobHuntDirect"
+        ]
+      }
+    }
+    </script>
+
+    <!-- Robots Meta (Allow indexing) -->
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow" />
+
+    <!-- Loading Performance Hint -->
+    <script>
+      // Prevent FOUC (Flash of Unstyled Content)
+      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      }
     </script>
   </head>
   <body>
+    <!-- No-JS Fallback -->
+    <noscript>
+      <div style="padding: 20px; background: #fee; color: #c00; text-align: center; font-family: sans-serif;">
+        <strong>JavaScript is required to use JobHuntDirect.</strong> 
+        Please enable JavaScript in your browser settings.
+      </div>
+    </noscript>
+
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
