@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../utils/api";
 import { toast } from "react-toastify";
@@ -18,6 +18,7 @@ import {
   HandCoins,
 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import { AuthContext } from "../context/AuthContext";
 
 export default function JobDetails() {
   const { id } = useParams();
@@ -25,6 +26,7 @@ export default function JobDetails() {
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
+  const {user} = useContext(AuthContext);
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -48,7 +50,7 @@ export default function JobDetails() {
 
   // Fetch saved jobs status
   useEffect(() => {
-    if (!job) return;
+    if (!job || !user) return;
 
     const fetchSavedJobs = async () => {
       try {
@@ -140,10 +142,10 @@ export default function JobDetails() {
   return (
     <>
       <Helmet>
-        <title>{`${job.title} at ${job.company} | JobHuntDirect`}</title>
+        <title>{`${job.title} Job Details in ${job.location || "Bangalore"} | Apply Now | JobHuntDirect`}</title>
         <meta
           name="description"
-          content={`${job.description.slice(0, 160)}...`}
+          content={`Explore ${job.title} job details for freshers and experienced professionals in ${job.location || "Bangalore"}. Apply directly to top companies through JobHuntDirect and discover more ${job.type || "full-time"} jobs.`}
         />
         <link
           rel="canonical"
@@ -169,7 +171,7 @@ export default function JobDetails() {
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div className="flex-1">
                   <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-3">
-                    {job.title}
+                    {job.title} - {job.company} - {job.location || "Bangalore"}
                   </h1>
                   <div className="flex flex-wrap items-center gap-3 text-blue-100">
                     <div className="flex items-center gap-2">
@@ -184,7 +186,7 @@ export default function JobDetails() {
                 {/* Quick Actions */}
                 <div className="flex gap-2">
                   <button
-                    onClick={handleSaveJob}
+                    onClick={ user ? handleSaveJob : () => toast.info("Please log in to save jobs")}
                     className={`p-2.5 backdrop-blur-sm rounded-lg transition-all duration-200 ${
                       isSaved
                         ? "bg-yellow-400/30 hover:bg-yellow-500/40"

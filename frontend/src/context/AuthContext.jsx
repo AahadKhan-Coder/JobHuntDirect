@@ -8,11 +8,18 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const fetchUser = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
     try {
       const res = await API.get("/auth/me");
       setUser(res.data);
     } catch {
       setUser(null);
+      localStorage.removeItem("token");
     } finally {
       setLoading(false);
     }
@@ -24,6 +31,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     await API.post("/auth/logout");
     setUser(null);
+    localStorage.removeItem("token");
   };
 
   return (

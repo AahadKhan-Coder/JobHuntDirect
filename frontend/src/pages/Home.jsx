@@ -120,6 +120,7 @@ export default function Home({ user }) {
     desc += " job openings from top companies on JobHuntDirect.";
     if (search) desc += ` Search results for "${search}".`;
     desc += " Discover remote, full-time, and internship roles that match your skills.";
+    if (desc.length > 220) desc = desc.slice(0, 217) + "...";
     return desc;
   }, [search, typeFilter]);
 
