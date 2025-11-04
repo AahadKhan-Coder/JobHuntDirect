@@ -35,8 +35,15 @@ export default function Home({ user }) {
   const fetchJobs = async () => {
     try {
       const res = await API.get(`/jobs?page=${page}&limit=10`);
-      setJobs((prev) => [...prev, ...res.data.jobs]);
-      if (jobs.length + res.data.jobs.length >= res.data.total) setHasMore(false);
+
+      setJobs((prev) => {
+        const updated = [...prev, ...res.data.jobs];
+        if (updated.length >= res.data.total) {
+          setHasMore(false);
+        }
+
+        return updated;
+      });
     } catch (error) {
       console.error("Failed to fetch jobs:", error);
     }
@@ -88,28 +95,30 @@ export default function Home({ user }) {
   const structuredData = useMemo(() => {
     const jobPostings = filteredJobs.slice(0, 10).map((job) => ({
       "@type": "JobPosting",
-      "title": job.title,
-      "description": job.description || `${job.title} position at ${job.company}`,
-      "datePosted": job.createdAt,
-      "hiringOrganization": {
+      title: job.title,
+      description: job.description || `${job.title} position at ${job.company}`,
+      datePosted: job.createdAt,
+      hiringOrganization: {
         "@type": "Organization",
-        "name": job.company,
+        name: job.company,
       },
-      "jobLocation": job.location ? {
-        "@type": "Place",
-        "address": job.location
-      } : undefined,
-      "employmentType": job.type?.toUpperCase().replace("-", "_"),
+      jobLocation: job.location
+        ? {
+            "@type": "Place",
+            address: job.location,
+          }
+        : undefined,
+      employmentType: job.type?.toUpperCase().replace("-", "_"),
     }));
 
     return {
       "@context": "https://schema.org/",
       "@type": "ItemList",
-      "itemListElement": jobPostings.map((job, index) => ({
+      itemListElement: jobPostings.map((job, index) => ({
         "@type": "ListItem",
-        "position": index + 1,
-        "item": job
-      }))
+        position: index + 1,
+        item: job,
+      })),
     };
   }, [filteredJobs]);
 
@@ -119,7 +128,8 @@ export default function Home({ user }) {
     if (typeFilter !== "all") desc += ` ${typeFilter}`;
     desc += " job openings from top companies on JobHuntDirect.";
     if (search) desc += ` Search results for "${search}".`;
-    desc += " Discover remote, full-time, and internship roles that match your skills.";
+    desc +=
+      " Discover remote, full-time, and internship roles that match your skills.";
     if (desc.length > 220) desc = desc.slice(0, 217) + "...";
     return desc;
   }, [search, typeFilter]);
@@ -128,7 +138,10 @@ export default function Home({ user }) {
   const pageTitle = useMemo(() => {
     let title = "";
     if (search) title += `${search} Jobs | `;
-    if (typeFilter !== "all") title += `${typeFilter.charAt(0).toUpperCase() + typeFilter.slice(1)} Jobs | `;
+    if (typeFilter !== "all")
+      title += `${
+        typeFilter.charAt(0).toUpperCase() + typeFilter.slice(1)
+      } Jobs | `;
     title += "JobHuntDirect - Apply Directly to Top Companies";
     return title;
   }, [search, typeFilter]);
@@ -167,46 +180,64 @@ export default function Home({ user }) {
       <Helmet>
         {/* Dynamic SEO Title */}
         <title>{pageTitle}</title>
-        
+
         {/* Dynamic Meta Description */}
         <meta name="description" content={metaDescription} />
-        
+
         {/* Enhanced Keywords */}
         <meta
           name="keywords"
           content="job search, jobhuntdirect, job board, remote jobs, tech jobs, software jobs, internships, career, employment, full-time jobs, part-time jobs, contract work, job listings, job opportunities, career development, job application, direct application, company jobs, hiring, recruitment"
         />
-        
+
         {/* Canonical URL */}
         <link rel="canonical" href="https://jobhuntdirect.jobsearchjob.xyz" />
-        
+
         {/* Language */}
         <html lang="en" />
-        
+
         {/* Robots Meta */}
-        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-        
+        <meta
+          name="robots"
+          content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+        />
+
         {/* Author */}
         <meta name="author" content="JobHuntDirect" />
-        
+
         {/* Open Graph - Enhanced */}
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="JobHuntDirect" />
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={metaDescription} />
-        <meta property="og:url" content="https://jobhuntdirect.jobsearchjob.xyz" />
-        <meta property="og:image" content="https://jobhuntdirect.jobsearchjob.xyz/preview.png" />
+        <meta
+          property="og:url"
+          content="https://jobhuntdirect.jobsearchjob.xyz"
+        />
+        <meta
+          property="og:image"
+          content="https://jobhuntdirect.jobsearchjob.xyz/preview.png"
+        />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content="JobHuntDirect - Find Your Dream Job" />
+        <meta
+          property="og:image:alt"
+          content="JobHuntDirect - Find Your Dream Job"
+        />
         <meta property="og:locale" content="en_US" />
 
         {/* Twitter Card - Enhanced */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={pageTitle} />
         <meta name="twitter:description" content={metaDescription} />
-        <meta name="twitter:image" content="https://jobhuntdirect.jobsearchjob.xyz/preview.png" />
-        <meta name="twitter:image:alt" content="JobHuntDirect Job Search Platform" />
+        <meta
+          name="twitter:image"
+          content="https://jobhuntdirect.jobsearchjob.xyz/preview.png"
+        />
+        <meta
+          name="twitter:image:alt"
+          content="JobHuntDirect Job Search Platform"
+        />
         <meta name="twitter:site" content="@jobhuntdirect" />
         <meta name="twitter:creator" content="@jobhuntdirect" />
 
@@ -216,28 +247,34 @@ export default function Home({ user }) {
         <meta name="theme-color" content="#2563eb" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        
+
         {/* Preconnect for Performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
 
         {/* WebSite Schema */}
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org/",
             "@type": "WebSite",
-            "name": "JobHuntDirect",
-            "alternateName": "Job Hunt Direct",
-            "url": "https://jobhuntdirect.jobsearchjob.xyz",
-            "description": "Find and apply directly to job openings from top companies worldwide",
-            "potentialAction": {
+            name: "JobHuntDirect",
+            alternateName: "Job Hunt Direct",
+            url: "https://jobhuntdirect.jobsearchjob.xyz",
+            description:
+              "Find and apply directly to job openings from top companies worldwide",
+            potentialAction: {
               "@type": "SearchAction",
-              "target": {
+              target: {
                 "@type": "EntryPoint",
-                "urlTemplate": "https://jobhuntdirect.jobsearchjob.xyz/?search={search_term_string}"
+                urlTemplate:
+                  "https://jobhuntdirect.jobsearchjob.xyz/?search={search_term_string}",
               },
-              "query-input": "required name=search_term_string"
-            }
+              "query-input": "required name=search_term_string",
+            },
           })}
         </script>
 
@@ -246,15 +283,16 @@ export default function Home({ user }) {
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Organization",
-            "name": "JobHuntDirect",
-            "url": "https://jobhuntdirect.jobsearchjob.xyz",
-            "logo": "https://jobhuntdirect.jobsearchjob.xyz/logo.png",
-            "description": "Job search platform connecting job seekers with top companies",
-            "foundingDate": "2024",
-            "sameAs": [
+            name: "JobHuntDirect",
+            url: "https://jobhuntdirect.jobsearchjob.xyz",
+            logo: "https://jobhuntdirect.jobsearchjob.xyz/logo.png",
+            description:
+              "Job search platform connecting job seekers with top companies",
+            foundingDate: "2024",
+            sameAs: [
               "https://twitter.com/jobhuntdirect",
-              "https://linkedin.com/company/jobhuntdirect"
-            ]
+              "https://linkedin.com/company/jobhuntdirect",
+            ],
           })}
         </script>
 
@@ -263,20 +301,20 @@ export default function Home({ user }) {
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
-            "itemListElement": [
+            itemListElement: [
               {
                 "@type": "ListItem",
-                "position": 1,
-                "name": "Home",
-                "item": "https://jobhuntdirect.jobsearchjob.xyz"
+                position: 1,
+                name: "Home",
+                item: "https://jobhuntdirect.jobsearchjob.xyz",
               },
               {
                 "@type": "ListItem",
-                "position": 2,
-                "name": "Jobs",
-                "item": "https://jobhuntdirect.jobsearchjob.xyz"
-              }
-            ]
+                position: 2,
+                name: "Jobs",
+                item: "https://jobhuntdirect.jobsearchjob.xyz",
+              },
+            ],
           })}
         </script>
 
@@ -293,15 +331,20 @@ export default function Home({ user }) {
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
           {/* Hero Section with H1 */}
           <header className="text-center mb-12 animate-fadeIn">
-            <div className="inline-flex items-center justify-center p-2 bg-blue-100 dark:bg-blue-900 rounded-full mb-4" aria-hidden="true">
+            <div
+              className="inline-flex items-center justify-center p-2 bg-blue-100 dark:bg-blue-900 rounded-full mb-4"
+              aria-hidden="true"
+            >
               <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400 animate-bounce" />
             </div>
             <h1 className="text-4xl md:text-5xl font-extrabold mb-3 bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
               Discover Your Dream Job
             </h1>
             <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
-              Explore thousands of opportunities from top companies around the world. 
-              {filteredJobs.length > 0 && ` Currently showing ${filteredJobs.length} job openings.`}
+              Explore thousands of opportunities from top companies around the
+              world.
+              {filteredJobs.length > 0 &&
+                ` Currently showing ${filteredJobs.length} job openings.`}
             </p>
           </header>
 
@@ -324,14 +367,20 @@ export default function Home({ user }) {
 
             {/* Search + Filter Section */}
             {filtersOpen && (
-              <div id="filter-section" className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-8 border border-gray-200 dark:border-gray-700">
+              <div
+                id="filter-section"
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-8 border border-gray-200 dark:border-gray-700"
+              >
                 <div className="flex flex-col lg:flex-row gap-4">
                   {/* Search Input */}
                   <div className="relative flex-1">
                     <label htmlFor="job-search" className="sr-only">
                       Search by job title or company name
                     </label>
-                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" aria-hidden="true" />
+                    <Search
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                      aria-hidden="true"
+                    />
                     <input
                       id="job-search"
                       type="search"
@@ -352,7 +401,10 @@ export default function Home({ user }) {
                     <label htmlFor="job-type-filter" className="sr-only">
                       Filter by job type
                     </label>
-                    <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" aria-hidden="true" />
+                    <Filter
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
+                      aria-hidden="true"
+                    />
                     <select
                       id="job-type-filter"
                       value={typeFilter}
@@ -377,7 +429,10 @@ export default function Home({ user }) {
                     <label htmlFor="job-sort" className="sr-only">
                       Sort jobs by date
                     </label>
-                    <TrendingUp className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" aria-hidden="true" />
+                    <TrendingUp
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
+                      aria-hidden="true"
+                    />
                     <select
                       id="job-sort"
                       value={sort}
@@ -462,26 +517,27 @@ export default function Home({ user }) {
           <section aria-label="Job listings">
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredJobs.length > 0 ? (
-                filteredJobs.map((job, index) =>
-                  index < 9 ? (
-                    <article key={job._id}>
+                filteredJobs.map((job) => (
+                  <article key={job._id}>
+                    <LazyLoadWrapper
+                      height="0px"
+                      offset={200}
+                      placeholder={
+                        <div className="bg-gray-100 dark:bg-gray-800 animate-pulse h-full w-full rounded-2xl" />
+                      }
+                    >
                       <JobCard job={job} user={user} />
-                    </article>
-                  ) : (
-                    <article key={job._id}>
-                      <LazyLoadWrapper height="360px" offset={300} placeholder={<div className="bg-gray-100 dark:bg-gray-800 rounded-2xl animate-pulse h-full w-full" />}>
-                        <div className="transition-opacity duration-300 opacity-0 lazyloaded:opacity-100">
-                          <JobCard job={job} user={user} />
-                        </div>
-                      </LazyLoadWrapper>
-                    </article>
-                  )
-                )
+                    </LazyLoadWrapper>
+                  </article>
+                ))
               ) : (
                 <div className="col-span-full">
                   <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600">
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full mb-4">
-                      <Search className="w-8 h-8 text-gray-400" aria-hidden="true" />
+                      <Search
+                        className="w-8 h-8 text-gray-400"
+                        aria-hidden="true"
+                      />
                     </div>
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                       No jobs found
@@ -504,7 +560,12 @@ export default function Home({ user }) {
 
           {/* Infinite Scroll Loader */}
           {hasMore && (
-            <div ref={loader} className="mt-12 text-center" aria-live="polite" aria-busy="true">
+            <div
+              ref={loader}
+              className="mt-12 text-center"
+              aria-live="polite"
+              aria-busy="true"
+            >
               <div className="inline-flex items-center justify-center gap-3 px-6 py-4 bg-white dark:bg-gray-800 rounded-full shadow-lg">
                 <div className="flex space-x-2" aria-hidden="true">
                   <div
@@ -539,7 +600,7 @@ export default function Home({ user }) {
 
         {/* Support Modal */}
         {supportOpen && (
-          <div 
+          <div
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
             role="dialog"
             aria-modal="true"
@@ -553,13 +614,19 @@ export default function Home({ user }) {
               >
                 ✖
               </button>
-              <h2 id="support-modal-title" className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
+              <h2
+                id="support-modal-title"
+                className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4"
+              >
                 Support / Suggestions
               </h2>
               <form onSubmit={handleSupportSubmit} className="space-y-4">
                 {!user && (
                   <div>
-                    <label htmlFor="support-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label
+                      htmlFor="support-email"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >
                       Your Email
                     </label>
                     <input
@@ -574,7 +641,10 @@ export default function Home({ user }) {
                   </div>
                 )}
                 <div>
-                  <label htmlFor="support-message" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="support-message"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Message
                   </label>
                   <textarea
