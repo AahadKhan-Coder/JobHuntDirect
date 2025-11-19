@@ -7,8 +7,6 @@ import PageTrackingWrapper from "./components/PageTrackingWrapper";
 import AdminRoute from "./components/AdminRoute";
 
 import Home from "./pages/Home";
-import Footer from "./components/Footer";
-
 // Lazy-loaded components
 const Navbar = lazy(() => import("./components/Navbar"));
 const JobDetails = lazy(() => import("./pages/JobDetails"));
