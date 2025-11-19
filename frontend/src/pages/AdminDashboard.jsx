@@ -40,7 +40,7 @@ export default function AdminDashboard() {
   const fetchJobs = async () => {
     setLoading(true);
     try {
-      const res = await API.get("/jobs");
+      const res = await API.get("/jobs?limit=1000&page=1");
       setJobs(res.data.jobs || res.data);
     } catch (error) {
       toast.error("Failed to fetch jobs");
