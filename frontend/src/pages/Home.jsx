@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import API from "../utils/api";
 import JobCard from "../components/JobCard";
 import {
@@ -14,13 +15,22 @@ import { Helmet } from "react-helmet-async";
 import LazyLoadWrapper from "../components/LazyLoadWrapper";
 
 export default function Home({ user }) {
+  // Read URL search params
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Initialize from URL (fallbacks)
+  const initialPage = Number(searchParams.get("page")) || 1;
+  const initialSearch = searchParams.get("search") || "";
+  const initialType = searchParams.get("type") || "all";
+  const initialSort = searchParams.get("sort") || "latest";
+
   const [jobs, setJobs] = useState([]);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(initialPage);
   const [hasMore, setHasMore] = useState(true);
 
-  const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState("all");
-  const [sort, setSort] = useState("latest");
+  const [search, setSearch] = useState(initialSearch);
+  const [typeFilter, setTypeFilter] = useState(initialType);
+  const [sort, setSort] = useState(initialSort);
 
   const [filtersOpen, setFiltersOpen] = useState(true);
 
@@ -30,18 +40,62 @@ export default function Home({ user }) {
   const [sending, setSending] = useState(false);
 
   const loader = useRef(null);
+  const PAGE_LIMIT = 10;
 
-  // Fetch jobs from API
-  const fetchJobs = async () => {
+  // Build a params object to keep URL and API in sync
+  const buildParams = (overrides = {}) => {
+    const p = {
+      page,
+      limit: PAGE_LIMIT,
+      ...(search ? { search } : {}),
+      ...(typeFilter && typeFilter !== "all" ? { type: typeFilter } : {}),
+      ...(sort && sort !== "latest" ? { sort } : {}),
+      ...overrides,
+    };
+
+    // remove undefined/null values
+    Object.keys(p).forEach((k) => {
+      if (p[k] === undefined || p[k] === null) delete p[k];
+    });
+
+    return p;
+  };
+
+  // update URL query params whenever page/search/typeFilter/sort change
+  useEffect(() => {
+    const params = {};
+    if (search) params.search = search;
+    if (typeFilter && typeFilter !== "all") params.type = typeFilter;
+    if (sort && sort !== "latest") params.sort = sort;
+    if (page && page > 1) params.page = String(page);
+
+    setSearchParams(params, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, search, typeFilter, sort]);
+
+  // Fetch jobs from API (respects search/type/page/sort)
+  const fetchJobs = async (opts = {}) => {
     try {
-      const res = await API.get(`/jobs?page=${page}&limit=10`);
+      const params = buildParams(opts);
+      // build query string
+      const query = new URLSearchParams(params).toString();
+      const res = await API.get(`/jobs?${query}`);
 
       setJobs((prev) => {
+        // if page === 1, replace (we want fresh results when filters/search change)
+        if (Number(params.page) === 1) {
+          if (res.data.jobs && res.data.jobs.length >= res.data.total) {
+            setHasMore(false);
+          } else {
+            setHasMore(true);
+          }
+          return res.data.jobs;
+        }
+
         const updated = [...prev, ...res.data.jobs];
         if (updated.length >= res.data.total) {
           setHasMore(false);
         }
-
         return updated;
       });
     } catch (error) {
@@ -49,15 +103,31 @@ export default function Home({ user }) {
     }
   };
 
+  // Initial & page-based fetch
   useEffect(() => {
+    // When page changes, fetch that page
     fetchJobs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
-  // Infinite scroll observer
+  // When filters/search/sort change -> reset to page 1 and fetch fresh
+  useEffect(() => {
+    // Reset job list and pagination
+    setJobs([]);
+    setHasMore(true);
+    setPage(1); // this will trigger fetchJobs via page effect
+    // We explicitly fetch page=1 with new params to avoid race (optional)
+    fetchJobs({ page: 1 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, typeFilter, sort]);
+
+  // Infinite scroll observer (unchanged UX)
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore) setPage((prev) => prev + 1);
+        if (entries[0].isIntersecting && hasMore) {
+          setPage((prev) => prev + 1);
+        }
       },
       { threshold: 1 }
     );
@@ -66,7 +136,8 @@ export default function Home({ user }) {
     return () => loader.current && observer.unobserve(loader.current);
   }, [loader, hasMore]);
 
-  // Memoized filtered jobs for performance
+  // Memoized filtered jobs for UI (you still filter client-side for instant feedback)
+  // NOTE: Because API already supports search/type/sort, this client filtering is optional.
   const filteredJobs = useMemo(() => {
     return jobs
       .filter((job) => {
@@ -91,7 +162,7 @@ export default function Home({ user }) {
       });
   }, [jobs, search, typeFilter, sort]);
 
-  // Generate dynamic structured data for search engines
+  // Generate dynamic structured data for search engines (ItemList)
   const structuredData = useMemo(() => {
     const jobPostings = filteredJobs.slice(0, 10).map((job) => ({
       "@type": "JobPosting",
@@ -116,11 +187,11 @@ export default function Home({ user }) {
       "@type": "ItemList",
       itemListElement: jobPostings.map((job, index) => ({
         "@type": "ListItem",
-        position: index + 1,
+        position: index + 1 + (page - 1) * PAGE_LIMIT, // reflect absolute position across pages
         item: job,
       })),
     };
-  }, [filteredJobs]);
+  }, [filteredJobs, page]);
 
   // Dynamic meta description based on filters
   const metaDescription = useMemo(() => {
@@ -146,11 +217,23 @@ export default function Home({ user }) {
     return title;
   }, [search, typeFilter]);
 
+  // Create canonical & prev/next URLs
+  const makeUrlWithParams = (p) => {
+    const params = { ...(search ? { search } : {}), ...(typeFilter !== "all" ? { type: typeFilter } : {}), ...(sort !== "latest" ? { sort } : {}), ...(p && p > 1 ? { page: p } : {}) };
+    const qs = new URLSearchParams(params).toString();
+    return `https://jobhuntdirect.jobsearchjob.xyz${qs ? `/?${qs}` : "/"}`;
+  };
+
+  const canonicalUrl = makeUrlWithParams(page);
+  const prevUrl = page > 1 ? makeUrlWithParams(page - 1) : null;
+  const nextUrl = hasMore ? makeUrlWithParams(page + 1) : null;
+
   // Clear all filters
   const handleClearFilters = () => {
     setSearch("");
     setTypeFilter("all");
     setSort("latest");
+    // setPage(1) is handled by effect that observes search/type/sort
   };
 
   const handleSupportSubmit = async (e) => {
@@ -177,56 +260,40 @@ export default function Home({ user }) {
 
   return (
     <>
-      <Helmet>
-        {/* Dynamic SEO Title */}
+      <Helmet htmlAttributes={{ lang: "en" }}>
+        {/* Dynamic Title */}
         <title>{pageTitle}</title>
 
         {/* Dynamic Meta Description */}
         <meta name="description" content={metaDescription} />
 
-        {/* Enhanced Keywords */}
+        {/* Keywords */}
         <meta
           name="keywords"
-          content="job search, jobhuntdirect, job board, remote jobs, tech jobs, software jobs, internships, career, employment, full-time jobs, part-time jobs, contract work, job listings, job opportunities, career development, job application, direct application, company jobs, hiring, recruitment"
+          content="job search, jobhuntdirect, job board, remote jobs, tech jobs, software jobs, internships, career"
         />
 
-        {/* Canonical URL */}
-        <link rel="canonical" href="https://jobhuntdirect.jobsearchjob.xyz" />
+        {/* Canonical */}
+        <link rel="canonical" href={canonicalUrl} />
 
-        {/* Language */}
-        <html lang="en" />
+        {/* Pagination Links for Crawlers */}
+        {prevUrl && <link rel="prev" href={prevUrl} />}
+        {nextUrl && <link rel="next" href={nextUrl} />}
 
-        {/* Robots Meta */}
-        <meta
-          name="robots"
-          content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
-        />
+        {/* Robots */}
+        <meta name="robots" content="index, follow" />
 
-        {/* Author */}
-        <meta name="author" content="JobHuntDirect" />
-
-        {/* Open Graph - Enhanced */}
+        {/* OG Tags */}
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="JobHuntDirect" />
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={metaDescription} />
-        <meta
-          property="og:url"
-          content="https://jobhuntdirect.jobsearchjob.xyz"
-        />
+        <meta property="og:url" content={canonicalUrl} />
         <meta
           property="og:image"
           content="https://jobhuntdirect.jobsearchjob.xyz/preview.png"
         />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta
-          property="og:image:alt"
-          content="JobHuntDirect - Find Your Dream Job"
-        />
-        <meta property="og:locale" content="en_US" />
 
-        {/* Twitter Card - Enhanced */}
+        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={pageTitle} />
         <meta name="twitter:description" content={metaDescription} />
@@ -234,97 +301,61 @@ export default function Home({ user }) {
           name="twitter:image"
           content="https://jobhuntdirect.jobsearchjob.xyz/preview.png"
         />
-        <meta
-          name="twitter:image:alt"
-          content="JobHuntDirect Job Search Platform"
-        />
-        <meta name="twitter:site" content="@jobhuntdirect" />
-        <meta name="twitter:creator" content="@jobhuntdirect" />
 
-        {/* Additional Meta Tags for Better Indexing */}
-        <meta name="application-name" content="JobHuntDirect" />
-        <meta name="apple-mobile-web-app-title" content="JobHuntDirect" />
-        <meta name="theme-color" content="#2563eb" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-
-        {/* Preconnect for Performance */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-
-        {/* WebSite Schema */}
+        {/* Combined JSON-LD Schema */}
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org/",
-            "@type": "WebSite",
-            name: "JobHuntDirect",
-            alternateName: "Job Hunt Direct",
-            url: "https://jobhuntdirect.jobsearchjob.xyz",
-            description:
-              "Find and apply directly to job openings from top companies worldwide",
-            potentialAction: {
-              "@type": "SearchAction",
-              target: {
-                "@type": "EntryPoint",
-                urlTemplate:
-                  "https://jobhuntdirect.jobsearchjob.xyz/?search={search_term_string}",
-              },
-              "query-input": "required name=search_term_string",
-            },
-          })}
-        </script>
-
-        {/* Organization Schema */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            name: "JobHuntDirect",
-            url: "https://jobhuntdirect.jobsearchjob.xyz",
-            logo: "https://jobhuntdirect.jobsearchjob.xyz/logo.png",
-            description:
-              "Job search platform connecting job seekers with top companies",
-            foundingDate: "2024",
-            sameAs: [
-              "https://twitter.com/jobhuntdirect",
-              "https://linkedin.com/company/jobhuntdirect",
-            ],
-          })}
-        </script>
-
-        {/* BreadcrumbList Schema */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            itemListElement: [
+            "@graph": [
               {
-                "@type": "ListItem",
-                position: 1,
-                name: "Home",
-                item: "https://jobhuntdirect.jobsearchjob.xyz",
+                "@type": "WebSite",
+                name: "JobHuntDirect",
+                url: "https://jobhuntdirect.jobsearchjob.xyz",
+                potentialAction: {
+                  "@type": "SearchAction",
+                  target:
+                    "https://jobhuntdirect.jobsearchjob.xyz/?search={search_term_string}",
+                  "query-input": "required name=search_term_string",
+                },
               },
               {
-                "@type": "ListItem",
-                position: 2,
-                name: "Jobs",
-                item: "https://jobhuntdirect.jobsearchjob.xyz",
+                "@type": "Organization",
+                name: "JobHuntDirect",
+                url: "https://jobhuntdirect.jobsearchjob.xyz",
+                logo: "https://jobhuntdirect.jobsearchjob.xyz/logo.png",
               },
-            ],
+              filteredJobs.length > 0 && {
+                "@type": "ItemList",
+                itemListElement: filteredJobs
+                  .slice(0, PAGE_LIMIT)
+                  .map((job, index) => ({
+                    "@type": "ListItem",
+                    position: index + 1 + (page - 1) * PAGE_LIMIT,
+                    item: {
+                      "@type": "JobPosting",
+                      title: job.title,
+                      description:
+                        job.description ||
+                        `${job.title} position at ${job.company}`,
+                      datePosted: job.createdAt,
+                      hiringOrganization: {
+                        "@type": "Organization",
+                        name: job.company,
+                      },
+                      jobLocation: {
+                        "@type": "Place",
+                        address: job.location || "Remote",
+                      },
+                      employmentType: job.type?.toUpperCase(),
+                    },
+                  })),
+              },
+            ].filter(Boolean),
           })}
         </script>
-
-        {/* JobPosting List Schema - Dynamic */}
-        {filteredJobs.length > 0 && (
-          <script type="application/ld+json">
-            {JSON.stringify(structuredData)}
-          </script>
-        )}
       </Helmet>
+
+      {/* ... rest of your JSX unchanged (hero, filters, results, job grid, loader, support button/modal) ... */}
 
       <div className="min-h-screen bg-transparent">
         {/* Main Content with Semantic HTML */}

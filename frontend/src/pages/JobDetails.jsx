@@ -26,7 +26,7 @@ export default function JobDetails() {
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
-  const {user} = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -142,15 +142,105 @@ export default function JobDetails() {
   return (
     <>
       <Helmet>
-        <title>{`${job.title} Job Details in ${job.location || "Bangalore"} | Apply Now | JobHuntDirect`}</title>
+        {/* SEO Title */}
+        <title>
+          {job.title} at {job.company} in {job.location || "India"} | Job
+          Details & Apply | JobHuntDirect
+        </title>
+
+        {/* Meta Description */}
         <meta
           name="description"
-          content={`Explore ${job.title} job details for freshers and experienced professionals in ${job.location || "Bangalore"}. Apply directly to top companies through JobHuntDirect and discover more ${job.type || "full-time"} jobs.`}
+          content={`Apply for ${job.title} at ${job.company} in ${job.location}. View job details, salary, experience, and apply directly through JobHuntDirect.`}
         />
+
+        {/* Canonical */}
         <link
           rel="canonical"
           href={`https://jobhuntdirect.jobsearchjob.xyz/jobs/${job._id}`}
         />
+
+        {/* OpenGraph */}
+        <meta
+          property="og:title"
+          content={`${job.title} – ${job.company} | JobHuntDirect`}
+        />
+        <meta
+          property="og:description"
+          content={`Explore and apply for ${job.title} at ${job.company} in ${job.location}. Find more opportunities on JobHuntDirect.`}
+        />
+        <meta
+          property="og:url"
+          content={`https://jobhuntdirect.jobsearchjob.xyz/jobs/${job._id}`}
+        />
+        <meta property="og:type" content="article" />
+        <meta property="og:site_name" content="JobHuntDirect" />
+        <meta
+          property="og:image"
+          content="https://jobhuntdirect.jobsearchjob.xyz/default-job-banner.png"
+        />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+          name="twitter:title"
+          content={`${job.title} – ${job.company} | JobHuntDirect`}
+        />
+        <meta
+          name="twitter:description"
+          content={`Apply for ${job.title} at ${job.company}. Discover full details and apply instantly.`}
+        />
+        <meta
+          name="twitter:image"
+          content="https://jobhuntdirect.jobsearchjob.xyz/default-job-banner.png"
+        />
+
+        {/* JobPosting Schema */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org/",
+            "@type": "JobPosting",
+            title: job.title,
+            description: job.description,
+            hiringOrganization: {
+              "@type": "Organization",
+              name: job.company,
+            },
+            jobLocation: {
+              "@type": "Place",
+              address: {
+                "@type": "PostalAddress",
+                addressLocality: job.location || "India",
+                addressCountry: "IN",
+              },
+            },
+            datePosted: job.createdAt,
+            employmentType: job.type || "Full-time",
+            baseSalary: job.salary
+              ? {
+                  "@type": "MonetaryAmount",
+                  currency: "INR",
+                  value: {
+                    "@type": "QuantitativeValue",
+                    value: job.salary,
+                    unitText: "YEAR",
+                  },
+                }
+              : undefined,
+            applicantLocationRequirements: {
+              "@type": "Country",
+              name: "India",
+            },
+            jobStartDate: "ASAP",
+            validThrough: job.createdAt
+              ? new Date(
+                  new Date(job.createdAt).setMonth(
+                    new Date(job.createdAt).getMonth() + 3
+                  )
+                ).toISOString()
+              : undefined,
+          })}
+        </script>
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 pb-32 md:pb-24">
@@ -186,7 +276,11 @@ export default function JobDetails() {
                 {/* Quick Actions */}
                 <div className="flex gap-2">
                   <button
-                    onClick={ user ? handleSaveJob : () => toast.info("Please log in to save jobs")}
+                    onClick={
+                      user
+                        ? handleSaveJob
+                        : () => toast.info("Please log in to save jobs")
+                    }
                     className={`p-2.5 backdrop-blur-sm rounded-lg transition-all duration-200 ${
                       isSaved
                         ? "bg-yellow-400/30 hover:bg-yellow-500/40"
