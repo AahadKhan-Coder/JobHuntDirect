@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { Sun, Moon, Laptop } from "lucide-react";
+import { Sun, Moon, SunMoonIcon } from "lucide-react";
 
 const options = [
   { value: "light", label: "Light", icon: <Sun size={18} className="animate-spin" /> },
   { value: "dark", label: "Dark", icon: <Moon size={18} className="animate-pulse" /> },
-  { value: "system", label: "System", icon: <Laptop size={18} className="animate-none" /> },
+  { value: "system", label: "System", icon: <SunMoonIcon size={20} className="animate-none" /> },
 ];
 
 export default function ThemeToggle() {

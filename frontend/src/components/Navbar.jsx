@@ -10,7 +10,7 @@ export default function Navbar() {
   return (
     <>
       {/* --- Mobile Top Header --- */}
-      <div className="flex items-center justify-between p-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700 lg:hidden sticky top-0 z-40 shadow-sm">
+      <div className="flex items-center justify-between p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-gray-200 dark:border-gray-700 lg:hidden sticky top-0 z-40 shadow-sm">
         <Link to="/" className="flex items-center gap-2 group">
           <div className="p-2 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl group-hover:scale-110 transition-transform duration-200 shadow-lg">
             <BriefcaseBusiness className="w-5 h-5 text-white" />
@@ -23,7 +23,7 @@ export default function Navbar() {
       </div>
 
       {/* --- Desktop / Tablet Top Navbar --- */}
-      <nav className="hidden lg:flex items-center justify-between px-6 py-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 shadow-sm">
+      <nav className="hidden lg:flex items-center justify-between px-6 py-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-gray-200 dark:border-gray-700 sticky top-0 z-40 shadow-sm">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group">
           <div className="relative">
